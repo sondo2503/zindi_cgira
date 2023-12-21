@@ -56,7 +56,7 @@ def save(examples, folds, num_fold, data_dir):
         for i, indices in enumerate(folds):
             if i == fold_idx:
                 for j in indices:
-                    records.append((examples[j][0], examples[j][1], 'val'))
+                    records.append((examples[j][0], examples[j][1][0], 'val'))
             else:
                 for j in indices:
                     records.append((examples[j][0], examples[j][1][0], 'train'))
