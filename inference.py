@@ -41,19 +41,19 @@ def inference(config, model, split, output_filename=None):
 
     with torch.no_grad():
         batch_size = config.eval.batch_size
-        total_size = len(dataloader.dataset)
+        total_size = len(dataloader.dataset)    
         total_step = math.ceil(total_size / batch_size)
         for i, data in tqdm.tqdm(enumerate(dataloader), total=total_step):
             images = data['image'].cuda()
 
             if len(images.size()) == 5:
                 B, T, C, H, W = images.size()
-                logits = model(images.view(-1, C, H, W))[:, :28]
+                logits = model(images.view(-1, C, H, W))[:, :5]
                 logits = logits.view(B, T, -1)
                 probabilities = F.sigmoid(logits)
                 probabilities = probabilities.mean(dim=1)
             else:
-                logits = model(images)[:, :28]
+                logits = model(images)[:, :5]
                 probabilities = F.sigmoid(logits)
 
             probability_list.append(probabilities.cpu().numpy())
@@ -67,25 +67,25 @@ def inference(config, model, split, output_filename=None):
             labels = np.concatenate(label_list, axis=0)
             assert labels.ndim == 2
             assert labels.shape[0] == total_size
-            assert labels.shape[-1] == 28
+            assert labels.shape[-1] == 5
 
         probabilities = np.concatenate(probability_list, axis=0)
         assert probabilities.ndim == 2
         assert probabilities.shape[0] == total_size
-        assert probabilities.shape[-1] == 28
+        assert probabilities.shape[-1] == 5
 
         if split != 'test':
             records = []
             for label, probability in zip(labels, probabilities):
                 records.append(tuple([str(l) for l in label] + ['{:.04f}'.format(p) for p in probability]))
 
-            columns = ['L{:02d}'.format(l) for l in range(28)] + ['P{:02d}'.format(l) for l in range(28)]
+            columns = ['L{:02d}'.format(l) for l in range(5)] + ['P{:02d}'.format(l) for l in range(5)]
         else:
             records = []
             for key, probability in zip(key_list, probabilities):
                 records.append(tuple([key] + ['{:.04f}'.format(p) for p in probability]))
 
-            columns = ['Id'] + ['P{:02d}'.format(l) for l in range(28)]
+            columns = ['Id'] + ['P{:02d}'.format(l) for l in range(5)]
 
         df = pd.DataFrame.from_records(records, columns=columns)
         print('save {}'.format(output_filename))
@@ -129,7 +129,7 @@ def main():
 
     print('inference HPA')
     args = parse_args()
-    config = utils.config.load(args.config_file)
+    config = utils.config._get_default_config()
     config.transform.name = 'tta_transform'
     config.transform.params.num_tta = args.num_tta
 

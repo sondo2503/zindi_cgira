@@ -17,14 +17,14 @@ def _get_default_config():
 
     # model
     c.model = edict()
-    c.model.name = 'convformer_b36.sail_in1k_384'
+    c.model.name = 'davit_tiny.msft_in1k'
     c.model.params = edict()
 
     # train
     c.train = edict()
     c.train.dir = './result/out'
-    c.train.batch_size = 32
-    c.train.num_epochs = 2000
+    c.train.batch_size = 16
+    c.train.num_epochs = 100
     c.train.num_grad_acc = None
 
     # evaluation
@@ -49,7 +49,7 @@ def _get_default_config():
 
     # losses
     c.loss = edict()
-    c.loss.name = None
+    c.loss.name = 'cross_entropy'
     c.loss.params = edict()
 
     return c

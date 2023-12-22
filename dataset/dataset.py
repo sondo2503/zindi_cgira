@@ -78,6 +78,7 @@ def test():
     # print(len(dataset))
     example = dataset[4]
     example = dataset[4]
+    print(example['image'].size)
 
     dataset = DefaultDataset('../data', 'val', None)
 

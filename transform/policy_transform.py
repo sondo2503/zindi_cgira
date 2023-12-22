@@ -36,8 +36,8 @@ def policy_transform(split,
                      per_image_norm=False,
                      mean_std=None,
                      **kwargs):
-    means = np.array([127.5, 127.5, 127.5, 127.5])
-    stds = np.array([255.0, 255.0, 255.0, 255.0])
+    means = np.array([127.5, 127.5, 127.5])
+    stds = np.array([255.0, 255.0, 255.0])
 
     base_aug = Compose([
         RandomRotate90(),

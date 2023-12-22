@@ -8,6 +8,7 @@ import argparse
 import pprint
 import tqdm
 
+import timm
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -79,7 +80,7 @@ def evaluate_single_epoch(config, model, dataloader, criterion,
         log_dict['loss'] = sum(loss_list) / len(loss_list)
 
         if writer is not None:
-            for l in range(28):
+            for l in range(5):
                 f1 = utils.metrics.f1_score_(labels[:, l], predictions[:, l], 'binary')
                 writer.add_scalar('val/f1_{:02d}'.format(l), f1, epoch)
 
@@ -188,8 +189,8 @@ def train(config, model, dataloaders, criterion, optimizer, scheduler, writer, s
 
 def run(config):
     train_dir = config.train.dir
-
-    model = get_model(config).cuda()
+    
+    model = timm.create_model(model_name='davit_tiny.msft_in1k', pretrained=False, num_classes=5)
     criterion = get_loss(config)
     optimizer = get_optimizer(config, model.parameters())
 
@@ -204,7 +205,7 @@ def run(config):
 
     dataloaders = {split: get_dataloader(config, split, get_transform(config, split))
                    for split in ['train', 'val']}
-
+    print(dataloaders)
     writer = SummaryWriter(config.train.dir)
     train(config, model, dataloaders, criterion, optimizer, scheduler,
           writer, last_epoch + 1)
@@ -217,6 +218,8 @@ def main():
     print('train CGIAR Image Classification Challenge.')
 
     config = utils.config._get_default_config()
+    config.transform.name = 'policy_transform'
+    config.scheduler.name = 'cosine'
     pprint.PrettyPrinter(indent=2).pprint(config)
     utils.prepare_train_directories(config)
     run(config)
