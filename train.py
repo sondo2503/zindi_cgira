@@ -105,25 +105,27 @@ def train_single_epoch(config, model, dataloader, criterion, optimizer,
     for i, data in tbar:
         images = data['image'].cuda()
         labels = data['label'].cuda()
+        optimizer.zero_grad()
         logits, aux_logits, probabilities = inference(model, images)
         loss = criterion(logits, labels.float())
         if aux_logits is not None:
             aux_loss = criterion(aux_logits, labels.float())
             loss = loss + 0.4 * aux_loss
         log_dict['loss'] = loss.item()
-
-        predictions = (probabilities > 0.5).long()
+        # print(probabilities)
+        predictions = (probabilities > 0.1).long()
         accuracy = (predictions == labels).sum().float() / float(predictions.numel())
         log_dict['acc'] = accuracy.item()
 
         loss.backward()
-
-        if config.train.num_grad_acc is None:
-            optimizer.step()
-            optimizer.zero_grad()
-        elif (i + 1) % config.train.num_grad_acc == 0:
-            optimizer.step()
-            optimizer.zero_grad()
+        optimizer.step()
+        # optimizer.zero_grad()
+        # if config.train.num_grad_acc is None:
+        #     optimizer.step()
+        #     optimizer.zero_grad()
+        # elif (i + 1) % config.train.num_grad_acc == 0:
+        #     optimizer.step()
+        #     optimizer.zero_grad()
 
         f_epoch = epoch + i / total_step
 
@@ -190,7 +192,7 @@ def train(config, model, dataloaders, criterion, optimizer, scheduler, writer, s
 def run(config):
     train_dir = config.train.dir
     
-    model = timm.create_model(model_name='davit_tiny.msft_in1k', pretrained=False, num_classes=5)
+    model = timm.create_model(model_name='mobilenetv3_large_100.ra_in1k', pretrained=False, num_classes=5)
     criterion = get_loss(config)
     optimizer = get_optimizer(config, model.parameters())
 

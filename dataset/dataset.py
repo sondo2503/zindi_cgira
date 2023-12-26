@@ -76,9 +76,9 @@ class DefaultDataset(Dataset):
 def test():
     dataset = DefaultDataset('../data', 'train', None)
     # print(len(dataset))
-    example = dataset[4]
-    example = dataset[4]
-    print(example['image'].size)
+    # example = dataset[4]
+    example = dataset[10]
+    print(example['key'])
 
     dataset = DefaultDataset('../data', 'val', None)
 
